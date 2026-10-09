@@ -1,13 +1,13 @@
 # Oracle contract
 
-The independent oracle lives in `unii/eval/oracle/`. It is plain Lua 5.1 /
+The independent oracle lives in `eval/oracle/`. It is plain Lua 5.1 /
 LuaJIT with no Shen and no imports from the engine. Its golden traces live
-in `unii/eval/fixtures/`. The line formats, the generator and the fixture
-provenance are documented in `unii/eval/oracle/README.md`.
+in `eval/fixtures/`. The line formats, the generator and the fixture
+provenance are documented in `eval/oracle/README.md`.
 
 ## How the engine is held to it
 
-`unii/test/test_oracle.lua` runs with the main suite and covers:
+`test/test_oracle.lua` runs with the main suite and covers:
 
 | Case | Diff |
 |---|---|
@@ -19,8 +19,8 @@ provenance are documented in `unii/eval/oracle/README.md`.
 | Summary rounds | 2,000 random outcome sequences (round sizes 1 to 5, result lengths straddling the 512-byte cap, retryable, permanent and uncertain outcomes, operator retries) drive one 1,000-byte leaf job through the engine and through `oracle.summary_rounds`. The final state must match: committed (same try and bytes, and the rendered line is that try's text), still running (same try), blocked or uncertain (the provisional line is the best result, else the raw message). |
 | Canonical text | 3,000 texts containing every line-break form, controls, `\|`, `%`, multibyte characters and long ranges (the engine splits long text into halves when rendering), against `oracle.render_line` |
 
-`luajit unii/eval/oracle/spec.lua` runs the oracle's own checks, and
-`luajit unii/eval/oracle/generate_fixtures.lua --check` confirms the
+`luajit eval/oracle/spec.lua` runs the oracle's own checks, and
+`luajit eval/oracle/generate_fixtures.lua --check` confirms the
 committed traces are current. If the oracle changes, regenerate the traces
 (`generate_fixtures.lua`) in the same commit.
 

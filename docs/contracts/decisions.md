@@ -1,10 +1,10 @@
 # Reconciled decisions: engine and oracle
 
-The Shen engine (`unii/core/`) and the independent oracle
-(`unii/eval/oracle/`, plain Lua) were written separately from the same plan
-and gist. `unii/test/test_oracle.lua` diffs them on every run against:
+The Shen engine (`core/`) and the independent oracle
+(`eval/oracle/`, plain Lua) were written separately from the same plan
+and gist. `test/test_oracle.lua` diffs them on every run against:
 
-* the oracle's golden traces (`unii/eval/fixtures/`);
+* the oracle's golden traces (`eval/fixtures/`);
 * the oracle module run side by side on random configurations.
 
 This page records each place where the sources were ambiguous, which
@@ -61,7 +61,7 @@ becomes one space like every other control character.
 
 These settle the questions this page used to leave open. Each one is
 implemented on the engine side and, where the oracle models it, on the
-oracle side too; `unii/test/test_oracle.lua` checks that the two agree.
+oracle side too; `test/test_oracle.lua` checks that the two agree.
 
 | # | Decision | Where it is implemented | Pinned by |
 |---|---|---|---|

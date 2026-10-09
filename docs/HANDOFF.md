@@ -1,8 +1,8 @@
 # unii handoff: Phase 0 through Phase 2
 
 unii is a provisional name. It is the memory engine for an endless
-conversation agent, built from the plan in this repository's task, *Shen and
-LuaJIT Conversation Agent Implementation Plan*, and from the UniiChat gist
+conversation agent, built from the plan *Shen and LuaJIT Conversation Agent Implementation
+Plan*, and from the UniiChat gist
 pinned in `MANIFEST.md`.
 
 The work is split between two languages:
@@ -14,10 +14,20 @@ The work is split between two languages:
   supervisor, the network adapter, a chat-completions provider, mocks and
   the CLI.
 
-This branch merges two parallel workstreams:
+unii was developed in the `unii/` directory of
+[pyrex41/shen-lua](https://github.com/pyrex41/shen-lua) and split out into
+this repository from branch `cursor/unii-phase2-storage-5d00` at `c951493`
+(pyrex41/shen-lua#77). The commit log carries over: the history of `unii/`
+was rewritten with `git filter-repo --subdirectory-filter unii`, so file
+paths in old commits are relative to this root. That history includes the
+lead branch `cursor/unii-phase0-phase1-8a71` (pyrex41/shen-lua#76) and the
+two parallel workstreams merged into it:
 
-* **PR #74:** the independent oracle and golden fixtures, in `eval/`.
-* **PR #75:** the libcurl HTTP adapter, in `host/network/`.
+* **pyrex41/shen-lua#74:** the independent oracle and golden fixtures, in `eval/`.
+* **pyrex41/shen-lua#75:** the libcurl HTTP adapter, in `host/network/`.
+
+The shen-lua runtime is now a pinned dependency rather than the surrounding
+checkout; see "Runtime pin" below.
 
 The engine's tests diff against the oracle on every run
 (`contracts/decisions.md`).
@@ -30,12 +40,46 @@ model provider has been called.
 ## Quick start
 
 ```sh
-nix develop ./unii                    # optional: pinned LuaJIT, git, curl, make
-luajit unii/test/run.lua              # build (typecheck) + every test; one entrypoint
-luajit unii/test/run.lua --only view  # one test file
-luajit unii/test/run.lua --with-upstream   # also the pinned port specs and kernel suite
-unii/bin/unii milestone --dir /tmp/chat    # the restart demonstration
+git clone --recurse-submodules https://github.com/pyrex41/unii
+cd unii                               # every command runs from the repository root
+# (existing clone: git submodule update --init)
+nix develop                           # optional: pinned LuaJIT, git, curl, make, python3, openssl
+luajit test/run.lua                   # build (typecheck) + every test; one entrypoint
+luajit test/run.lua --only view       # one test file
+luajit test/run.lua --with-upstream   # also the pinned port specs and kernel suite
+luajit test/network/run.lua           # the libcurl adapter's own suite
+luajit eval/oracle/spec.lua           # the oracle's own checks
+luajit eval/oracle/generate_fixtures.lua --check
+bin/unii milestone --dir /tmp/chat    # the restart demonstration
 ```
+
+## Runtime pin
+
+unii boots shen-lua at `fc9757731580f77aad6b3b4cea53773261b36d44`
+(release 0.11.1, `manifest.lua`). The same commit is pinned three ways, and
+`test_boundary` fails if they disagree:
+
+* the git submodule `vendor/shen-lua` (the default runtime);
+* the flake input `shen-lua` (`flake.nix`, narHash in `flake.lock`). The dev
+  shell exports `UNII_SHEN_LUA` (the store path) and `UNII_SHEN_LUA_REV`,
+  and the runtime is then loaded from the store instead of the submodule;
+* `manifest.shen_lua.commit`.
+
+`host/shen_lua.lua` resolves the runtime directory (`UNII_SHEN_LUA`, else
+`vendor/shen-lua`), puts it on `package.path` behind unii's own root, and
+verifies the pin. `build.lua` refuses to build when a git checkout of the
+runtime is at another commit, has tracked changes or has untracked,
+non-ignored files, or when `UNII_SHEN_LUA_REV` names another commit. A
+runtime directory that is neither is reported as unverified, and the stamp
+records `shen_lua_verified no`. shen-lua writes its kernel bytecode cache
+(`.shen-kernel-cache.*.bin`, ignored) to the working directory and its fasl
+cache to `~/.cache/shen-lua-fasl`, so the runtime tree itself stays
+read-only. `--with-upstream` runs the port specs and kernel suite in a
+scratch copy of the runtime.
+
+Lua module names are relative to this root (`host.core`, `test.lib`,
+`eval.oracle.oracle`, `manifest`); in shen-lua they were `unii.host.core`
+and so on.
 
 Other CLI commands, all of which take `--dir D`:
 
@@ -55,10 +99,13 @@ Other CLI commands, all of which take `--dir D`:
 ## Layout
 
 ```
-unii/
+./
+  README.md, LICENSE
   manifest.lua          pinned revisions, toolchain, license, bundle files, format versions
   build.lua             typechecked build: pin check, (tc +) load with fasl off, ill-typed fixture, stamp
-  flake.nix, flake.lock dev shell pinned to the root flake's nixpkgs revision
+  flake.nix, flake.lock dev shell: shen-lua's nixpkgs revision, shen-lua flake input
+  .gitmodules           vendor/shen-lua submodule (pinned shen-lua runtime)
+  vendor/shen-lua/      the pinned runtime and compiler, unmodified
   bin/unii              CLI launcher
   core/                 the pure Shen rules (no clock, files, network, randomness, eval or `/`)
     arith.shen          bounds, exact divmod by 2^L, digest32
@@ -71,6 +118,7 @@ unii/
   host/
     codec.lua           tagged values, Shen conversion, canonical storage bytes
     schema.lua          record shapes mirroring types.shen; boundary validation
+    shen_lua.lua        locates the pinned runtime, adds it to package.path, verifies the pin
     core.lua            boots shen-lua, checks the build stamp, calls the typed core
     supervisor.lua      single writer: validate, transition, journal and fsync, adopt; replay
     storage.lua         framed journal adapter (interface in docs/contracts/storage.md)
@@ -80,20 +128,20 @@ unii/
     storage_index.lua   rebuildable journal/message/blob/node/job indexes
     sha256.lua          pure-Lua SHA-256
     models.lua          provider interface, adapter-result classification
-    network/            REAL libcurl adapter (PR #75; its README covers TLS, logging, limits)
+    network/            REAL libcurl adapter (pyrex41/shen-lua#75; its README covers TLS, logging, limits)
     providers/chat_completions.lua  OpenAI-compatible summarizer over an injected client
     mock/network.lua    MOCK transport with the adapter's interface (docs/contracts/network.md)
     mock/summarizer.lua MOCK provider: chat_completions over the mock transport, fake summaries
     synthetic.lua       deterministic synthetic messages (multi-byte text included)
     cli.lua             milestone CLI
   test/                 run.lua (entrypoint), lib.lua, test_*.lua, fixtures/
-    network/            the adapter's own suite and local test server (PR #75)
+    network/            the adapter's own suite and local test server (pyrex41/shen-lua#75)
   docs/                 HANDOFF.md, MANIFEST.md, contracts/*.md
-  eval/oracle/          independent Lua oracle (PR #74); eval/fixtures/ golden traces
+  eval/oracle/          independent Lua oracle (pyrex41/shen-lua#74); eval/fixtures/ golden traces
 ```
 
-The runtime and compiler outside `unii/` are untouched. `build.lua` and a
-test both enforce this against the pinned commit.
+The runtime and compiler in `vendor/shen-lua` are untouched. `build.lua`
+and a test both enforce this against the pinned commit.
 
 ## Contracts
 
@@ -110,7 +158,7 @@ test both enforce this against the pinned commit.
 
 ## Integration status
 
-**HTTP adapter (`host/network/`, PR #75).** The adapter is merged and
+**HTTP adapter (`host/network/`, pyrex41/shen-lua#75).** The adapter is merged and
 unchanged, except that it now exports `IS_MOCK = false`.
 
 * `host/providers/chat_completions.lua` drives it.
@@ -123,7 +171,7 @@ unchanged, except that it now exports `IS_MOCK = false`.
   turns in-flight commands into `uncertain` instead of resending them.
 * The mock transport implements the same interface over a simulated clock.
 
-**Oracle (`eval/`, PR #74).** `test_oracle` diffs the engine against:
+**Oracle (`eval/`, pyrex41/shen-lua#74).** `test_oracle` diffs the engine against:
 
 * the 20,001-step rollback trace;
 * the byte-hysteresis trace;
@@ -144,24 +192,26 @@ is not resent.
 
 ## Acceptance gates and how each was verified
 
-Every row is an automated test in `luajit unii/test/run.lua`. The last run
-passed 108 tests, with 0 failed and 0 skipped. `--with-upstream` adds the
-pinned port specs (1,088 checks across 22 specs) and the kernel suite
-(134 of 134).
+Every row is an automated test in `luajit test/run.lua`. The last run,
+from a fresh `git clone --recurse-submodules` of this repository on both
+verified toolchains (`MANIFEST.md`; in `nix develop` the runtime came from
+the flake input), passed 107 tests, with 0 failed and 0 skipped.
+`--with-upstream` adds two more: the pinned port specs (1,088 checks across
+22 specs) and the kernel suite (134 of 134).
 
 Separately:
 
-* `luajit unii/test/network/run.lua` (the adapter suite) passes 18 and
+* `luajit test/network/run.lua` (the adapter suite) passes 18 and
   skips 1, its real-provider smoke test, because no API key is set.
-* `luajit unii/eval/oracle/spec.lua` passes 15 of 15.
-* `luajit unii/eval/oracle/generate_fixtures.lua --check` reports the
+* `luajit eval/oracle/spec.lua` passes 15 of 15.
+* `luajit eval/oracle/generate_fixtures.lua --check` reports the
   checked-in fixtures unchanged.
 
 ### Phase 0
 
 | Gate | Evidence |
 |---|---|
-| Boot the pinned runtime | `test_boundary`: the runtime outside `unii/` is byte-identical to `fc97577`; the runtime boots and reports Shen 42 / 0.11.1 |
+| Boot the pinned runtime | `test_boundary`: the runtime is a clean checkout of `fc97577` (or the flake input at that rev); manifest, submodule gitlink, `flake.nix` and `flake.lock` name the same commit; the runtime boots and reports Shen 42 / 0.11.1 |
 | Typecheck a rules module at build time | `build.lua` loads all 7 core files under `(tc +)` with `SHEN_FASL=off` (about 3.2 s), and refuses `test/fixtures/ill_typed_rules.shen`. `test_boundary` checks that boot rejects a bundle whose hash does not match the stamp. |
 | Call a typed transition from Lua | `test_boundary`: the signature is `(unii.state --> (unii.event --> unii.result))`, and a tagged event goes in while decoded commands and decisions come out |
 | Round-trip every domain value | `test_codec`: 13 cases, including symbol, text, `()`, vector, boolean and absent all staying distinct, both through Shen and through the storage bytes |
@@ -266,15 +316,22 @@ Under the native Prolog engine, a file that defines a double-line datatype
 rule with six or more premises over other user datatypes fails at load
 with `shen.consume<N> is undefined`. Five premises work.
 
-Reproducer: `unii/test/fixtures/upstream/{six,five}_premises.shen`. Run it
-with `luajit unii/test/fixtures/upstream/probe.lua <file> <expr>`.
+Reproducer: `test/fixtures/upstream/{six,five}_premises.shen`. Run it
+with `luajit test/fixtures/upstream/probe.lua <file> <expr>`.
 `test_boundary` asserts the current behavior, and it fails with a clear
 message once upstream fixes the bug, so the workaround can then be removed.
 
 Workaround: no rule in `core/types.shen` has more than five premises.
 Config is split into `view-budget` and `queue-limits`, state is split into
-`tree` and `counters`, and code uses the accessor functions. This has not
-been reported upstream from this branch.
+`tree` and `counters`, and code uses the accessor functions.
+
+Fix: pyrex41/shen-lua#78 (`mkhandle` emits `NEWCONTV` past 16 captures, so
+the `shen.consume<N>` helpers register). The pin deliberately stays at
+`fc97577`. Once it moves to a commit that contains that fix, the nested-record
+workaround can be dropped: flatten the records in `core/types.shen`, and
+flip the six-premise probe in `test_boundary` to expect `LOAD ok`. Changing
+`core/` changes the bundle hash, so chats created by the old bundle will no
+longer open (`supervisor.lua` checks the recorded hash).
 
 ## Not done, and known limits
 

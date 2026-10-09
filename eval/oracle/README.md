@@ -7,14 +7,14 @@ module, and does not share an implementation branch with the memory engine.
 Run from the repository root:
 
 ```sh
-luajit unii/eval/oracle/generate_fixtures.lua --check
-luajit unii/eval/oracle/spec.lua
+luajit eval/oracle/generate_fixtures.lua --check
+luajit eval/oracle/spec.lua
 ```
 
 Regenerate the checked-in traces with:
 
 ```sh
-luajit unii/eval/oracle/generate_fixtures.lua
+luajit eval/oracle/generate_fixtures.lua
 ```
 
 ## Contracts represented
@@ -57,7 +57,7 @@ checks the inverse scaling before using each product.
 The plan requires deterministic line-break collapse and a documented policy
 for delimiter-sensitive text. After rejecting invalid UTF-8, this oracle
 applies the policy reconciled with the engine (decision 5 in
-`unii/docs/contracts/decisions.md`):
+`docs/contracts/decisions.md`):
 
 1. CRLF (as one break), lone CR, lone LF, NEL (U+0085), LS (U+2028) and PS
    (U+2029) each become one ASCII space.
@@ -72,7 +72,7 @@ included in view bytes. Prompt framing such as `<chat>` tags is not.
 
 ## Golden fixture format
 
-Fixtures are UTF-8/LF text under `unii/eval/fixtures/`. Lines beginning with
+Fixtures are UTF-8/LF text under `eval/fixtures/`. Lines beginning with
 `#` are metadata. Fields use `|`; lists use commas; `-` is an empty list.
 Node addresses are always `first+count`.
 
@@ -98,7 +98,7 @@ B|T|batch-active|entered-batch|bytes-before|bytes-after|merged-parents-or--|olde
 It runs 700 appends with every parent available and deterministic node text of
 420 through 499 bytes. The text includes `%`, `|`, CRLF, precomposed UTF-8,
 and a combining mark, exercising canonical rendering and byte accounting.
-`unii/test/test_oracle.lua` diffs the Shen engine against both traces.
+`test/test_oracle.lua` diffs the Shen engine against both traces.
 The rollback and hysteresis fixtures are intentionally separate policies.
 
 ## Rollback provenance
@@ -123,7 +123,7 @@ Taelin's UniiChat gist:
 4. The plan does not define delimiter escaping. The policy above replaced
    this oracle's original percent-encoding when it was reconciled with the
    engine. Reuben confirmed it (decision R3 in
-   `unii/docs/contracts/decisions.md`).
+   `docs/contracts/decisions.md`).
 5. The rollback comparison's “matching line-count budget” is the rollback
    list length after each push, not a byte estimate. Byte hysteresis has its
    own trace.

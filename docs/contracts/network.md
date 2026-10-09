@@ -2,12 +2,12 @@
 
 Two transports share one Lua interface:
 
-* **Real:** `require("unii.host.network")` (`unii/host/network/`, from PR
-  #75). This is a libcurl multi binding through LuaJIT FFI. It has TLS
-  verification on by default, SSE streaming, cancellation, and redacted
-  logging. `IS_MOCK = false`. Its README covers TLS, logging, limits and
+* **Real:** `require("host.network")` (`host/network/`, from
+  pyrex41/shen-lua#75). This is a libcurl multi binding through LuaJIT
+  FFI. It has TLS verification on by default, SSE streaming, cancellation,
+  and redacted logging. `IS_MOCK = false`. Its README covers TLS, logging, limits and
   OpenResty.
-* **Mock:** `require("unii.host.mock.network")`, with `IS_MOCK = true`. It
+* **Mock:** `require("host.mock.network")`, with `IS_MOCK = true`. It
   has no sockets and no wall clock. A scripted in-process server answers
   each request, and each `tick` advances a simulated clock. This is the
   default for tests and for the CLI.
@@ -137,14 +137,14 @@ summarization prompt (§6, §8) is not specified yet.
 * **Real adapter through the provider, supervisor and CLI**
   (`test_network_real.lua`):
   * runs against the adapter's local test server
-    (`unii/test/network/mock_server.py`, 127.0.0.1, plain HTTP);
+    (`test/network/mock_server.py`, 127.0.0.1, plain HTTP);
   * a streamed completion is committed as the summary;
   * a connection dropped after send becomes `uncertain`, and the server
     sees exactly one request;
   * `unii retry` recovers the job;
   * the API key is never printed or journaled;
   * it skips when libcurl or python3 is missing.
-* **The adapter's own suite** (`luajit unii/test/network/run.lua`):
+* **The adapter's own suite** (`luajit test/network/run.lua`):
   * TLS verification, cancellation, timeouts, the inflight cap and
     redaction;
   * its real-provider smoke test skips without an API key.
