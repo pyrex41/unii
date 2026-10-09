@@ -1,9 +1,10 @@
-local script = (arg and arg[0]) or "unii/eval/oracle/spec.lua"
-local root = script:match("^(.*)unii/eval/oracle/") or "./"
+local script = (arg and arg[0]) or "eval/oracle/spec.lua"
+local root = script:match("^(.*)eval/oracle/[^/]*$")
+if not root or root == "" then root = "./" end
 package.path = root .. "?.lua;" .. package.path
 
-local oracle = require("unii.eval.oracle.oracle")
-local rollback = require("unii.eval.oracle.rollback")
+local oracle = require("eval.oracle.oracle")
+local rollback = require("eval.oracle.rollback")
 
 local passed, failed = 0, 0
 
@@ -295,7 +296,7 @@ end)
 
 test("checked-in fixtures have complete terminal records", function()
   local function inspect(name, prefix, final_T)
-    local file = assert(io.open(root .. "unii/eval/fixtures/" .. name, "rb"))
+    local file = assert(io.open(root .. "eval/fixtures/" .. name, "rb"))
     local count, last = 0
     for line in file:lines() do
       if line:sub(1, 2) == prefix .. "|" then

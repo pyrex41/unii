@@ -1,24 +1,23 @@
--- unii/build.lua -- typecheck the rule bundle and record the build stamp.
+-- build.lua -- typecheck the rule bundle and record the build stamp.
 --
---   luajit unii/build.lua            (or: unii/bin/unii build)
+--   luajit build.lua            (or: bin/unii build)
 --
--- 1. Checks the toolchain (LuaJIT 2.1) and, when git is available, that the
---    shen-lua runtime outside unii/ is byte-identical to the pinned commit.
+-- 1. Checks the toolchain (LuaJIT 2.1) and that the shen-lua runtime
+--    (vendor/shen-lua, or UNII_SHEN_LUA in the Nix shell) is the pinned
+--    commit, unmodified (host/shen_lua.lua).
 -- 2. Loads every core file under (tc +) with the fasl cache disabled, so the
 --    kernel typechecker really runs, and confirms that a deliberately
 --    ill-typed rules module is rejected (the check is live, not vacuous).
--- 3. Writes unii/build/bundle.stamp with the bundle hash. Boot refuses any
+-- 3. Writes build/bundle.stamp with the bundle hash. Boot refuses any
 --    bundle whose hash differs from the stamp.
 local ffi = require("ffi")
 ffi.cdef [[ int setenv(const char *name, const char *value, int overwrite); ]]
 ffi.C.setenv("SHEN_FASL", "off", 1)
 
-local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)/build%.lua$") or "unii"
-local root = here:match("^(.*)/unii$") or "."
-package.path = root .. "/?.lua;" .. root .. "/?/init.lua;" .. package.path
+local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)/build%.lua$") or "."
+package.path = here .. "/?.lua;" .. here .. "/?/init.lua;" .. package.path
 
-local manifest = require("unii.manifest")
-local core = require("unii.host.core")
+local manifest = require("manifest")
 
 local function step(msg) io.stdout:write("[build] ", msg, "\n") end
 local function die(msg) io.stderr:write("[build] FAILED: ", msg, "\n"); os.exit(1) end
@@ -30,18 +29,12 @@ end
 step("toolchain " .. jit.version .. " " .. jit.os .. "/" .. jit.arch)
 
 local pin = manifest.shen_lua.commit
-local git_ok = os.execute(("git -C %q rev-parse --verify -q %s^{commit} >/dev/null 2>&1"):format(root, pin))
-if git_ok == 0 or git_ok == true then
-  local same = os.execute(("git -C %q diff --quiet %s -- . ':(exclude)unii' 2>/dev/null"):format(root, pin))
-  if not (same == 0 or same == true) then
-    die("shen-lua runtime outside unii/ differs from pinned commit " .. pin)
-  end
-  local untracked = io.popen(("git -C %q ls-files --others --exclude-standard -- . ':(exclude)unii'"):format(root)):read("*a")
-  if untracked ~= "" then die("untracked files outside unii/:\n" .. untracked) end
-  step("shen-lua runtime matches pinned commit " .. pin:sub(1, 12))
-else
-  step("WARNING: git or pinned commit unavailable; runtime pin not verified")
-end
+local shen_lua = require("host.shen_lua")
+local pinned, how = shen_lua.verify()
+if pinned == false then die(how) end
+step((pinned and "shen-lua runtime: " or "WARNING: ") .. how)
+shen_lua.install()
+local core = require("host.core")
 
 -- 2. typecheck
 local t0 = os.clock()
@@ -65,6 +58,7 @@ f:write("bundle ", hash, "\n",
         "bundle_format ", manifest.bundle_format, "\n",
         "files ", table.concat(manifest.core_files, " "), "\n",
         "shen_lua ", pin, "\n",
+        "shen_lua_verified ", pinned and "yes" or "no", "\n",
         "luajit ", jit.version, "\n")
 f:close()
 step("bundle " .. hash .. " -> " .. core.stamp_path(here))

@@ -1,0 +1,3 @@
+[submodule "vendor/shen-lua"]
+	path = vendor/shen-lua
+	url = https://github.com/pyrex41/shen-lua

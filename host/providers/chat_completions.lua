@@ -1,18 +1,18 @@
--- unii/host/providers/chat_completions.lua -- summarizer over an
+-- host/providers/chat_completions.lua -- summarizer over an
 -- OpenAI-compatible /chat/completions stream.
 --
 -- The network client is injected: the real libcurl adapter
--- (require("unii.host.network").client{...}) or the MOCK transport
--- (require("unii.host.mock.network").client{...}). One submit-summary
+-- (require("host.network").client{...}) or the MOCK transport
+-- (require("host.mock.network").client{...}). One submit-summary
 -- command is one request; nothing here retries. Outcomes are classified by
 -- models.classify, so a request that may have reached the provider without
 -- a definite answer is reported as "uncertain" and the core parks the job.
 --
 -- The prompt is PROVISIONAL: the plan's summarization prompt (§6, §8) is
 -- not specified yet. PROMPT_VERSION names what was sent.
-local codec = require("unii.host.codec")
-local json = require("unii.host.network.json")
-local models = require("unii.host.models")
+local codec = require("host.codec")
+local json = require("host.network.json")
+local models = require("host.models")
 
 local M = {}
 M.PROMPT_VERSION = "provisional-0"

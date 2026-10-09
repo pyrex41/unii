@@ -2,13 +2,13 @@
 -- chat-completions provider over it (the MOCK summarizer). The mock has the
 -- real adapter's interface (docs/contracts/network.md); these tests do not
 -- touch a socket. test_network_real.lua drives the real adapter locally.
-local T = require("unii.test.lib")
-local mocknet = require("unii.host.mock.network")
-local models = require("unii.host.models")
-local mock = require("unii.host.mock.summarizer")
-local supervisor = require("unii.host.supervisor")
-local schema = require("unii.host.schema")
-local json = require("unii.host.network.json")
+local T = require("test.lib")
+local mocknet = require("host.mock.network")
+local models = require("host.models")
+local mock = require("host.mock.summarizer")
+local supervisor = require("host.supervisor")
+local schema = require("host.schema")
+local json = require("host.network.json")
 
 local function server_of(map)
   return function(req) return map[req.id] end
@@ -120,7 +120,7 @@ return {
     local a = mock.fake_text(job, 512)
     T.eq(a, mock.fake_text(job, 512))
     T.ok(#a <= 512 and a:find("^%[mock 1/0 a1%]"))
-    T.ok(require("unii.host.codec").valid_utf8(a), "truncation respects UTF-8")
+    T.ok(require("host.codec").valid_utf8(a), "truncation respects UTF-8")
     local got
     p:start(job, function(o) got = o end)
     while p:pending() > 0 do p:step() end
@@ -238,7 +238,7 @@ return {
   end },
 
   { "the provisional prompt passes each round hint to the model", function()
-    local cc = require("unii.host.providers.chat_completions")
+    local cc = require("host.providers.chat_completions")
     local function system(retry)
       local job = { attempt = { n = 2, retry = retry }, input = { _ = "leaf-input", kind = "user" }, source = "x" }
       return cc.messages(job, 512)[1].content

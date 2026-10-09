@@ -1,4 +1,4 @@
--- unii/host/supervisor.lua -- the single serialized writer for one chat.
+-- host/supervisor.lua -- the single serialized writer for one chat.
 --
 -- Every change goes through submit(event):
 --   1. validate the event at the boundary (schema + codec);
@@ -21,11 +21,11 @@
 -- provider may have received it, so it is never sent again automatically.
 -- dispatch_pending() submits summary-uncertain for it
 -- and the core parks the job until an operator retries it.
-local codec = require("unii.host.codec")
-local schema = require("unii.host.schema")
-local sha256 = require("unii.host.sha256")
-local storage = require("unii.host.storage")
-local manifest = require("unii.manifest")
+local codec = require("host.codec")
+local schema = require("host.schema")
+local sha256 = require("host.sha256")
+local storage = require("host.storage")
+local manifest = require("manifest")
 
 local M = {}
 local Sup = {}
@@ -41,7 +41,7 @@ end
 
 function M.open(dir, opts)
   opts = opts or {}
-  local core = opts.core or require("unii.host.core").boot()
+  local core = opts.core or require("host.core").boot()
   local store, info = storage.open(dir)
   local self = setmetatable({
     dir = dir, core = core, store = store, info = info, provider = opts.provider,

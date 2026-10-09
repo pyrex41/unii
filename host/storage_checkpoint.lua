@@ -1,8 +1,8 @@
 -- Durable checkpoint files and their small manifest. Checkpoints are
 -- accelerators; a bad or stale one is set aside and an older candidate is
 -- tried before falling back to full journal replay.
-local posix = require("unii.host.posix")
-local sha256 = require("unii.host.sha256")
+local posix = require("host.posix")
+local sha256 = require("host.sha256")
 
 local M = {}
 local MAGIC = "UC1 "

@@ -1,10 +1,10 @@
-local T = require("unii.test.lib")
-local storage = require("unii.host.storage")
-local posix = require("unii.host.posix")
-local codec = require("unii.host.codec")
-local schema = require("unii.host.schema")
-local supervisor = require("unii.host.supervisor")
-local mock = require("unii.host.mock.summarizer")
+local T = require("test.lib")
+local storage = require("host.storage")
+local posix = require("host.posix")
+local codec = require("host.codec")
+local schema = require("host.schema")
+local supervisor = require("host.supervisor")
+local mock = require("host.mock.summarizer")
 
 local function transaction(text)
   return codec.encode(codec.map {

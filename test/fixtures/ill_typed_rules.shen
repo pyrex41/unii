@@ -1,4 +1,4 @@
-\* A deliberately ill-typed rules module. unii/build.lua loads it under (tc +)
+\* A deliberately ill-typed rules module. build.lua loads it under (tc +)
    and fails the build if the typechecker accepts it. *\
 
 (define unii-fixture.view-ready?

@@ -6,7 +6,7 @@
 --       is still above low (no eligible built sibling pair was left)
 --   else:
 --       no merges, batch mode stays off, bytes == pre (and so <= high)
-local T = require("unii.test.lib")
+local T = require("test.lib")
 
 local function rng(seed)
   local x = seed % 2147483646 + 1

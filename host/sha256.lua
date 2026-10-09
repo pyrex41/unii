@@ -1,6 +1,6 @@
--- unii/host/sha256.lua -- SHA-256 (FIPS 180-4) over Lua strings, LuaJIT `bit`.
+-- host/sha256.lua -- SHA-256 (FIPS 180-4) over Lua strings, LuaJIT `bit`.
 -- Returns lowercase hex. Verified against the NIST test vectors in
--- unii/test/test_codec.lua.
+-- test/test_codec.lua.
 local bit = require("bit")
 local band, bor, bxor, bnot = bit.band, bit.bor, bit.bxor, bit.bnot
 local rshift, lshift, ror, tobit, tohex = bit.rshift, bit.lshift, bit.ror, bit.tobit, bit.tohex

@@ -3,9 +3,9 @@
 -- runs from any working directory.
 local script = arg[0]
 local bin = script:match("^(.*)/[^/]+$") or "."
-local root = bin .. "/../.."
+local root = bin .. "/.."
 local f = io.popen(("cd %q && pwd"):format(root))
 root = f:read("*l")
 f:close()
 package.path = root .. "/?.lua;" .. root .. "/?/init.lua;" .. package.path
-require("unii.host.cli").main(arg)
+require("host.cli").main(arg)

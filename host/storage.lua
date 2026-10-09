@@ -1,4 +1,4 @@
--- unii/host/storage.lua -- Phase 2 day-sharded journal, content-addressed
+-- host/storage.lua -- Phase 2 day-sharded journal, content-addressed
 -- blobs, checkpoints and rebuildable indexes.
 --
 -- Interface (docs/contracts/storage.md):
@@ -9,12 +9,12 @@
 --
 -- Frame: "UJ1 <seq> <len>\n" <payload> "\n" <sha256(header..payload)> "\n"
 --
-local posix = require("unii.host.posix")
-local sha256 = require("unii.host.sha256")
-local codec = require("unii.host.codec")
-local Blobs = require("unii.host.storage_blobs")
-local Checkpoints = require("unii.host.storage_checkpoint")
-local Index = require("unii.host.storage_index")
+local posix = require("host.posix")
+local sha256 = require("host.sha256")
+local codec = require("host.codec")
+local Blobs = require("host.storage_blobs")
+local Checkpoints = require("host.storage_checkpoint")
+local Index = require("host.storage_index")
 
 local M = {}
 M.MAX_RECORD = 16 * 1024 * 1024

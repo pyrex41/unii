@@ -14,10 +14,10 @@
 -- They must not call client:tick (the event loop is not re-entrant).
 
 local ffi = require("ffi")
-local curl = require("unii.host.network.curl_ffi")
-local sse = require("unii.host.network.sse")
-local json = require("unii.host.network.json")
-local redact = require("unii.host.network.redact")
+local curl = require("host.network.curl_ffi")
+local sse = require("host.network.sse")
+local json = require("host.network.json")
+local redact = require("host.network.redact")
 
 local MAX_SUMMARY_INFLIGHT = 8
 local MAX_TURN_INFLIGHT = 1

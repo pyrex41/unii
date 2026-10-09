@@ -12,7 +12,7 @@ and HTTP stack; this file only drives it.
 
 ```lua
 package.path = "./?.lua;" .. package.path
-local network = require("unii.host.network")
+local network = require("host.network")
 
 local client = network.client({
   max_inflight = network.DEFAULT_MAX_INFLIGHT, -- 8 summaries + 1 turn
@@ -227,11 +227,11 @@ separate question and are not this module.
 From the repo root:
 
 ```sh
-luajit unii/test/network/run.lua
-luajit unii/test/network/smoke.lua   # exits 0 and prints SKIP without a key
+luajit test/network/run.lua
+luajit test/network/smoke.lua   # exits 0 and prints SKIP without a key
 ```
 
-`unii/test/network/mock_server.py` is the local HTTP and HTTPS peer. The suite
+`test/network/mock_server.py` is the local HTTP and HTTPS peer. The suite
 covers SSE reassembly, a slow stream with `tick(0)`, cancel before send and
 mid-stream, connection refused (`failed`), drop after the request is read
 (`uncertain`, one hit on the server), a short body with a lying

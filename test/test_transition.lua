@@ -1,7 +1,7 @@
 -- Transition behaviour: exact leaves, lossless joins, job identity, lead
 -- window, inflight cap, retries, blocking, duplicates, out-of-order
 -- completions and event rejection.
-local T = require("unii.test.lib")
+local T = require("test.lib")
 
 local function big(n, ch) return (ch or "x"):rep(n) end
 local function commands_of(out, name)
@@ -253,7 +253,7 @@ return {
     T.eq(T.decision_names(out), "completion-ignored")
     T.eq(e.C:state_hash(e.state), before, "duplicate delivery changed state")
     out = e:apply({ _ = "summary-completed", job = "j9-0-0-a1-x", attempt = 1, bytes = 1,
-                    sha256 = require("unii.host.sha256").hex("x"), text = "x" })
+                    sha256 = require("host.sha256").hex("x"), text = "x" })
     T.eq(T.decision_names(out), "completion-ignored")
     T.ok(e.C:render(e.state):find("0+1|first", 1, true), "first delivery published once")
   end },

@@ -1,4 +1,4 @@
--- unii/host/schema.lua -- record schemas mirroring unii/core/types.shen.
+-- host/schema.lua -- record schemas mirroring core/types.shen.
 --
 -- A record is a Shen list headed by its constructor symbol with positional
 -- fields. On the Lua side it is a table {_ = "name", field = value, ...}:
@@ -10,8 +10,8 @@
 --   one(names...)  a nested record whose constructor is one of `names`
 -- opt(T) encodes as [none] or [some X] so absent stays distinct from (),
 -- false and "" in Shen.
-local codec = require("unii.host.codec")
-local sha256 = require("unii.host.sha256")
+local codec = require("host.codec")
+local sha256 = require("host.sha256")
 
 local M = {}
 M.MAX_ID = 2147483647

@@ -12,14 +12,14 @@
 --   * every merge replaced two adjacent siblings by their parent;
 --   * the core's own invariant checks report nothing.
 -- Re-running a seed reproduces every state hash.
-local T = require("unii.test.lib")
+local T = require("test.lib")
 
 local function rng(seed)
   local x = seed % 2147483646 + 1
   return function(n) x = (16807 * x) % 2147483647; return x % n end
 end
 
-local collapse = require("unii.eval.oracle.oracle").canonical_text
+local collapse = require("eval.oracle.oracle").canonical_text
 local function kstr(k) return k.level .. "/" .. k.index end
 
 local function parse_view(text)
@@ -165,7 +165,7 @@ local function run_trace(seed, steps, cfg)
         out = e:apply(T.done(c, ("z"):rep(cap + 1 + r(50))))
       else
         local text = ("[s %d/%d] "):format(c.key.level, c.key.index) .. body(r(cap - 20))
-        text = require("unii.host.codec").utf8_prefix(text, cap)
+        text = require("host.codec").utf8_prefix(text, cap)
         delivered[c.job] = text
         local key = kstr(c.key)
         fits[key] = fits[key] or {}

@@ -1,11 +1,11 @@
--- Engine versus the independent oracle (unii/eval/oracle, plain Lua, no
+-- Engine versus the independent oracle (eval/oracle, plain Lua, no
 -- Shen). Every case drives the typed Shen core and diffs it against the
 -- oracle's golden fixtures or against the oracle module run side by side.
-local T = require("unii.test.lib")
-local oracle = require("unii.eval.oracle.oracle")
+local T = require("test.lib")
+local oracle = require("eval.oracle.oracle")
 
-local function S() T.core(); return require("unii.host.core").shen() end
-local FIX = T.root() .. "/unii/eval/fixtures/"
+local function S() T.core(); return require("host.core").shen() end
+local FIX = T.root() .. "/eval/fixtures/"
 
 local function log2(n) local l = 0; while 2 ^ l < n do l = l + 1 end; return l end
 local function parse_addrs(s)
@@ -34,7 +34,7 @@ local function lines_of(path, prefix)
   return rows
 end
 
--- The fixture generator's node text (unii/eval/oracle/generate_fixtures.lua).
+-- The fixture generator's node text (eval/oracle/generate_fixtures.lua).
 -- If this copy drifted, the byte columns below would stop matching.
 local function synthetic_text(value)
   local node = oracle.node(value.level, value.index)
@@ -48,8 +48,8 @@ end
 -- the transition uses, with the oracle's notion of "parent available".
 local function policy_engine(opts)
   local s = S()
-  local codec = require("unii.host.codec")
-  local schema = require("unii.host.schema")
+  local codec = require("host.codec")
+  local schema = require("host.schema")
   local cfg = codec.to_shen(schema.encode("config", schema.config { low = opts.low, high = opts.high }))
   local joined = s.list({ s.sym("joined") })
   local cache = {}

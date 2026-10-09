@@ -1,7 +1,7 @@
 -- Content-addressed immutable blobs. A blob is durable before its hash can
 -- appear in a journal frame: temp write, file sync, rename, directory sync.
-local posix = require("unii.host.posix")
-local sha256 = require("unii.host.sha256")
+local posix = require("host.posix")
+local sha256 = require("host.sha256")
 
 local M = {}
 

@@ -1,14 +1,14 @@
--- unii/test/run.lua -- the single test entrypoint.
+-- test/run.lua -- the single test entrypoint.
 --
---   luajit unii/test/run.lua [--only NAME] [--with-upstream]
+--   luajit test/run.lua [--only NAME] [--with-upstream]
 --
 -- Runs the typechecked build first (fails fast if the rule bundle does not
 -- typecheck or the runtime differs from the pinned commit), then every
--- unii/test/test_*.lua module. --with-upstream also runs the pinned
--- shen-lua port specs (make test) and the Shen 42 kernel suite.
-local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)/test/run%.lua$")
-local root = here:match("^(.*)/unii$") or "."
-package.path = root .. "/?.lua;" .. root .. "/?/init.lua;" .. package.path
+-- test/test_*.lua module. --with-upstream also runs the pinned shen-lua
+-- port specs (make test) and the Shen 42 kernel suite, in a scratch copy of
+-- the runtime so the submodule (or read-only flake input) is not written.
+local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)/test/run%.lua$") or "."
+package.path = here .. "/?.lua;" .. here .. "/?/init.lua;" .. package.path
 
 local only, upstream = nil, false
 local i = 1
@@ -41,7 +41,7 @@ local failures = {}
 local t_all = os.clock()
 for _, name in ipairs(files) do
   if not only or name:find(only, 1, true) then
-    local suite = require("unii.test." .. name)
+    local suite = require("test." .. name)
     io.stdout:write("\n== ", name, "\n")
     for _, case in ipairs(suite) do
       local t0 = os.clock()
@@ -64,16 +64,25 @@ end
 
 if upstream then
   io.stdout:write("\n== upstream shen-lua (pinned) port specs and kernel suite\n")
-  if sh(("cd %q && make test >/tmp/unii-upstream-spec.log 2>&1"):format(root)) then
+  local runtime = require("host.shen_lua").dir()
+  local p = io.popen("mktemp -d /tmp/unii-upstream.XXXXXX")
+  local scratch = p:read("*l")
+  p:close()
+  if not sh(("cp -R %q/. %q && chmod -R u+w %q && rm -rf %q/.git"):format(runtime, scratch, scratch, scratch)) then
+    io.stderr:write("cannot copy " .. runtime .. " to " .. scratch .. "\n")
+    os.exit(1)
+  end
+  if sh(("cd %q && make test >/tmp/unii-upstream-spec.log 2>&1"):format(scratch)) then
     passed = passed + 1; print("  ok   make test (log /tmp/unii-upstream-spec.log)")
   else
     failed = failed + 1; failures[#failures + 1] = "upstream make test"; print("  FAIL make test")
   end
-  if sh(("cd %q && luajit run-kernel-tests.lua >/tmp/unii-upstream-kernel.log 2>&1"):format(root)) then
+  if sh(("cd %q && luajit run-kernel-tests.lua >/tmp/unii-upstream-kernel.log 2>&1"):format(scratch)) then
     passed = passed + 1; print("  ok   kernel suite (log /tmp/unii-upstream-kernel.log)")
   else
     failed = failed + 1; failures[#failures + 1] = "upstream kernel suite"; print("  FAIL kernel suite")
   end
+  os.execute(("rm -rf %q"):format(scratch))
 end
 
 io.stdout:write(("\n%d passed, %d failed, %d skipped (%.1fs CPU in this process)\n")

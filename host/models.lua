@@ -1,8 +1,8 @@
--- unii/host/models.lua -- provider-neutral summarizer interface.
+-- host/models.lua -- provider-neutral summarizer interface.
 --
 -- A provider turns one submit-summary command (plus the source text the
 -- host loaded for it) into one request on a network client (the real
--- adapter in unii/host/network/ or the mock in unii/host/mock/network.lua),
+-- adapter in host/network/ or the mock in host/mock/network.lua),
 -- and reports exactly one outcome:
 --   on_outcome{ ok = true,  text = "..." }
 --   on_outcome{ ok = false, class = "retryable" | "permanent" | "uncertain", error = "..." }

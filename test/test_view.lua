@@ -7,7 +7,7 @@
 -- The push function below is a direct transcription of the gist's
 -- rollback_state_list.js push, used as the test-side reference. The
 -- independent oracle's golden fixtures are diffed in test_oracle.lua.
-local T = require("unii.test.lib")
+local T = require("test.lib")
 
 local function push(new, st)
   if st == nil then return { keep = 0, life = 0, state = new, older = nil } end

@@ -1,12 +1,12 @@
 -- Framed journal and supervisor durability: round trips, crash tails at
 -- every byte offset, corruption refusal, single-owner locking, restart
 -- with identical hashes, replay divergence, and bundle/config refusal.
-local T = require("unii.test.lib")
-local storage = require("unii.host.storage")
-local supervisor = require("unii.host.supervisor")
-local codec = require("unii.host.codec")
-local schema = require("unii.host.schema")
-local mock = require("unii.host.mock.summarizer")
+local T = require("test.lib")
+local storage = require("host.storage")
+local supervisor = require("host.supervisor")
+local codec = require("host.codec")
+local schema = require("host.schema")
+local mock = require("host.mock.summarizer")
 
 local function read(path)
   local f = io.open(path, "rb"); if not f then return nil end
@@ -115,7 +115,7 @@ return {
     local s = storage.open(dir)
     T.raises(function() storage.open(dir) end, "owned by another process")
     local child = ([[luajit -e 'package.path=%q..package.path
-      local ok, e = pcall(require("unii.host.storage").open, %q)
+      local ok, e = pcall(require("host.storage").open, %q)
       io.write(ok and "OPENED" or tostring(e))']]):format(T.root() .. "/?.lua;", dir)
     local out = T.sh(child)
     T.ok(out:find("owned by another process", 1, true), out)

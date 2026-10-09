@@ -5,9 +5,9 @@
 local ffi = require("ffi")
 ffi.cdef("int setenv(const char *, const char *, int);")
 ffi.C.setenv("SHEN_FASL", "off", 1)
-local root = debug.getinfo(1, "S").source:sub(2):match("^(.*)/unii/test/fixtures/upstream/probe%.lua$")
+local root = debug.getinfo(1, "S").source:sub(2):match("^(.*)/test/fixtures/upstream/probe%.lua$") or "."
 package.path = root .. "/?.lua;" .. root .. "/?/init.lua;" .. package.path
-local S = require("unii.host.core").shen()
+local S = require("host.core").shen()
 local msg = require("lua_interop").error_message
 S.eval("(tc +)")
 local ok, e = pcall(S.eval, ('(load "%s")'):format(arg[1]))

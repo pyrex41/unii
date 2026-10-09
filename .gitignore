@@ -1,1 +1,4 @@
 build/
+# shen-lua writes its kernel bytecode cache to the working directory
+.shen-kernel-cache*.bin
+.shen-kernel-cache*.bin.tmp

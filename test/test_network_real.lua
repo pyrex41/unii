@@ -1,12 +1,12 @@
--- The REAL libcurl adapter (unii/host/network/) under the chat-completions
+-- The REAL libcurl adapter (host/network/) under the chat-completions
 -- provider and the supervisor, against the adapter's local test server
--- (unii/test/network/mock_server.py on 127.0.0.1). Real sockets and HTTP;
+-- (test/network/mock_server.py on 127.0.0.1). Real sockets and HTTP;
 -- the "model" is that test server, not a provider. Skips when libcurl or
 -- python3 is unavailable.
-local T = require("unii.test.lib")
-local schema = require("unii.host.schema")
-local supervisor = require("unii.host.supervisor")
-local chat = require("unii.host.providers.chat_completions")
+local T = require("test.lib")
+local schema = require("host.schema")
+local supervisor = require("host.supervisor")
+local chat = require("host.providers.chat_completions")
 
 local server
 
@@ -25,11 +25,11 @@ end
 
 local function setup()
   if server then return server end
-  local ok, network = pcall(require, "unii.host.network")
+  local ok, network = pcall(require, "host.network")
   if not ok then return nil end
   local _, has_py = T.sh("command -v python3")
   if not has_py then return nil end
-  local pipe = io.popen(("exec python3 %q"):format(T.root() .. "/unii/test/network/mock_server.py"), "r")
+  local pipe = io.popen(("exec python3 %q"):format(T.root() .. "/test/network/mock_server.py"), "r")
   local info = { network = network, pipe = pipe }
   for _ = 1, 10 do
     local line = pipe:read("*l")
@@ -116,7 +116,7 @@ return {
 
   { "CLI --network real: dropped request is reported stuck, `unii retry` recovers it", with_server(function(s)
     local dir = T.tmpdir("realcli") .. "/chat"
-    local bin = T.root() .. "/unii/bin/unii"
+    local bin = T.root() .. "/bin/unii"
     local function run(args) return T.sh(("UNII_API_KEY=test-key-not-secret %q %s"):format(bin, args)) end
     local out, ok = run(("init --dir %q --cap 64"):format(dir))
     T.ok(ok, out)

@@ -1,10 +1,11 @@
--- unii/host/core.lua -- boot the pinned Shen runtime, load the typed rule
+-- host/core.lua -- boot the pinned Shen runtime, load the typed rule
 -- bundle once, and call it with data. Never evaluates user, model or
 -- summary text as Shen: events cross as tagged values via host/codec.lua.
-local codec = require("unii.host.codec")
-local schema = require("unii.host.schema")
-local sha256 = require("unii.host.sha256")
-local manifest = require("unii.manifest")
+local codec = require("host.codec")
+local schema = require("host.schema")
+local sha256 = require("host.sha256")
+local manifest = require("manifest")
+local shen_lua = require("host.shen_lua")
 
 local M = {}
 
@@ -20,7 +21,7 @@ M.read_file = read_file
 function M.unii_dir()
   local info = debug.getinfo(1, "S").source:sub(2)
   local dir = info:match("^(.*)/host/core%.lua$")
-  if not dir then error("core.lua: cannot locate unii/ from " .. info) end
+  if not dir then error("core.lua: cannot locate the unii root from " .. info) end
   return dir
 end
 
@@ -51,6 +52,7 @@ local shen, F, iop
 
 local function boot_shen()
   if shen then return end
+  shen_lua.install()
   shen = require("shen")
   shen.boot { quiet = true, hush_load = true }
   iop = require("lua_interop")
@@ -92,7 +94,7 @@ function M.boot(opts)
   local hash = M.bundle_hash(dir)
   local stamp = M.read_stamp(dir)
   if stamp ~= hash then
-    error(("rule bundle %s has not passed the typechecked build (stamp: %s); run `unii/bin/unii build`")
+    error(("rule bundle %s has not passed the typechecked build (stamp: %s); run `bin/unii build`")
       :format(hash:sub(1, 16), stamp and stamp:sub(1, 16) or "missing"), 0)
   end
   M.load_bundle(dir)

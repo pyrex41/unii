@@ -1,6 +1,6 @@
 -- Phase 0 network adapter tests.
 --
---   luajit unii/test/network/run.lua
+--   luajit test/network/run.lua
 --
 -- Drives a local mock (streaming, slow, dropped connection, bad TLS) and
 -- skips the real-provider smoke test when no API key is set.
@@ -19,21 +19,16 @@ end
 
 local function repo_root()
   local dir = (arg[0] or ""):match("^(.*)/[^/]+$") or "."
-  local root = dir:gsub("/unii/test/network$", "")
-  if root == dir then
-    root = dir:gsub("unii/test/network$", "")
-  end
-  if root == "" then root = "." end
-  return root
+  return dir:match("^(.*)/test/network$") or "."
 end
 
 local root = repo_root()
 package.path = root .. "/?.lua;" .. root .. "/?/init.lua;" .. package.path
 
-local network = require("unii.host.network")
-local json = require("unii.host.network.json")
-local sse = require("unii.host.network.sse")
-local redact = require("unii.host.network.redact")
+local network = require("host.network")
+local json = require("host.network.json")
+local sse = require("host.network.sse")
+local redact = require("host.network.redact")
 
 local passed, failed, skipped = 0, 0, 0
 local failures = {}
@@ -109,7 +104,7 @@ local function gen_certs(dir)
 end
 
 local function start_server(certdir)
-  local script = root .. "/unii/test/network/mock_server.py"
+  local script = root .. "/test/network/mock_server.py"
   local cmd = string.format(
     "exec python3 %q --bad-cert %q --bad-key %q --good-cert %q --good-key %q",
     script,
@@ -578,7 +573,7 @@ end)
 
 local smoke_status, smoke_detail
 do
-  local smoke = require("unii.test.network.smoke")
+  local smoke = require("test.network.smoke")
   smoke_status, smoke_detail = smoke.run()
 end
 

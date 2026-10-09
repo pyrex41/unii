@@ -1,4 +1,4 @@
--- unii/host/mock/summarizer.lua -- MOCK summarization provider.
+-- host/mock/summarizer.lua -- MOCK summarization provider.
 --
 -- The real chat-completions provider (host/providers/chat_completions.lua)
 -- driven over the MOCK transport (host/mock/network.lua), with a fake model
@@ -14,10 +14,10 @@
 --   uncertain = true    request sent, connection dropped mid-stream
 --   no_done = true      HTTP 200 completes but the stream never sends [DONE]
 --   stall = true        request sent, no answer until the timeout
-local codec = require("unii.host.codec")
-local json = require("unii.host.network.json")
-local mocknet = require("unii.host.mock.network")
-local chat = require("unii.host.providers.chat_completions")
+local codec = require("host.codec")
+local json = require("host.network.json")
+local mocknet = require("host.mock.network")
+local chat = require("host.providers.chat_completions")
 
 local M = {}
 M.URL = "mock://model/v1/chat/completions"

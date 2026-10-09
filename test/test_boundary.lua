@@ -1,32 +1,42 @@
 -- Phase 0 boundary gates: pinned runtime and gist, rule-bundle and
 -- configuration checks at boot, typed transition called from Lua, rounded
 -- identifier rejection, purity of the core, and no eval of data.
-local T = require("unii.test.lib")
-local codec = require("unii.host.codec")
-local schema = require("unii.host.schema")
-local core = require("unii.host.core")
-local manifest = require("unii.manifest")
+local T = require("test.lib")
+local codec = require("host.codec")
+local schema = require("host.schema")
+local core = require("host.core")
+local manifest = require("manifest")
+
+local shen_lua = require("host.shen_lua")
 
 local root = T.root()
-local unii = root .. "/unii"
 
 local function read(p) local f = assert(io.open(p, "rb")); local s = f:read("*a"); f:close(); return s end
 
 return {
-  { "runtime outside unii/ is byte-identical to the pinned shen-lua commit", function()
-    local out, ok = T.sh(("git -C %q cat-file -t %s"):format(root, manifest.shen_lua.commit))
-    if not ok then return "skip" end
-    T.eq(out:gsub("%s", ""), "commit")
-    local _, same = T.sh(("git -C %q diff --quiet %s -- . ':(exclude)unii'"):format(root, manifest.shen_lua.commit))
-    T.ok(same, "files outside unii/ differ from " .. manifest.shen_lua.commit)
-    local _, anc = T.sh(("git -C %q merge-base --is-ancestor %s HEAD"):format(root, manifest.shen_lua.commit))
-    T.ok(anc, "pinned commit is not an ancestor of HEAD")
+  { "the shen-lua runtime is the pinned commit, unmodified", function()
+    local ok, how = shen_lua.verify()
+    if ok == nil then return "skip" end
+    T.ok(ok, how)
+  end },
+
+  { "manifest, submodule gitlink, flake.nix and flake.lock pin one shen-lua commit", function()
+    local pin = manifest.shen_lua.commit
+    local lock = require("host.network.json").decode(read(root .. "/flake.lock"))
+    local node = T.ok(lock.nodes[lock.nodes.root.inputs["shen-lua"] or ""], "flake.lock has no shen-lua input")
+    T.eq(node.locked.rev, pin, "flake.lock shen-lua rev")
+    T.eq(node.locked.owner .. "/" .. node.locked.repo, "pyrex41/shen-lua", "flake.lock shen-lua repo")
+    T.ok(read(root .. "/flake.nix"):find("github:pyrex41/shen-lua/" .. pin, 1, true), "flake.nix shen-lua url")
+    T.ok(read(root .. "/.gitmodules"):find("url = " .. manifest.shen_lua.repo, 1, true), ".gitmodules url")
+    local tree, ok = T.sh(("git -C %q ls-tree HEAD vendor/shen-lua"):format(root))
+    if not ok or tree == "" then return "skip" end
+    T.eq(tree:match("^160000 commit (%x+)\t"), pin, "vendor/shen-lua gitlink")
   end },
 
   { "pinned runtime boots and reports Shen 42 / release 0.11.1", function()
     local S = core.shen()
     T.eq(S.value("*version*"), "42")
-    local rockspec = read(root .. "/shen-" .. manifest.shen_lua.release .. "-1.rockspec")
+    local rockspec = read(shen_lua.dir() .. "/shen-" .. manifest.shen_lua.release .. "-1.rockspec")
     T.ok(rockspec:find('version = "' .. manifest.shen_lua.release .. '-1"', 1, true), "rockspec version")
   end },
 
@@ -38,22 +48,22 @@ return {
     if not ok then os.remove(tmp); return "skip" end
     local body = read(tmp)
     T.eq(#body, g.bytes, "gist byte length")
-    T.eq(require("unii.host.sha256").hex(body), g.sha256, "gist sha256")
+    T.eq(require("host.sha256").hex(body), g.sha256, "gist sha256")
     local id, gok = T.sh(("git hash-object %q"):format(tmp))
     os.remove(tmp)
     if gok then T.eq((id:gsub("%s", "")), g.git_blob, "gist git blob id") end
   end },
 
   { "build stamp matches the bundle; boot rejects an untypechecked bundle", function()
-    T.eq(core.read_stamp(unii), core.bundle_hash(unii))
+    T.eq(core.read_stamp(root), core.bundle_hash(root))
     local tmp = T.tmpdir("bundle")
     os.execute(("mkdir -p %q/host %q/build && cp -R %q/core %q/ && cp %q/build/bundle.stamp %q/build/")
-      :format(tmp, tmp, unii, tmp, unii, tmp))
+      :format(tmp, tmp, root, tmp, root, tmp))
     local f = assert(io.open(tmp .. "/core/view.shen", "ab"))
     f:write("\n\\\\ an edit after the build\n")
     f:close()
     T.ok(core.bundle_hash(tmp) ~= core.read_stamp(tmp), "edited bundle must change its hash")
-    -- boot() checks the hash of its own unii/ dir; emulate with the edited copy
+    -- boot() checks the hash of its own root dir; emulate with the edited copy
     local saved = core.unii_dir
     core.unii_dir = function() return tmp end
     local err = T.raises(function() core.boot() end, "has not passed the typechecked build")
@@ -65,7 +75,7 @@ return {
   { "ill-typed rules are rejected by the kernel typechecker", function()
     local S = core.shen()
     S.eval("(tc +)")
-    local ok, err = pcall(S.prims.F["load"], unii .. "/test/fixtures/ill_typed_rules.shen")
+    local ok, err = pcall(S.prims.F["load"], root .. "/test/fixtures/ill_typed_rules.shen")
     S.eval("(tc -)")
     T.ok(not ok, "ill-typed module loaded")
     T.ok(core.error_message(err):find("type error", 1, true), core.error_message(err))
@@ -117,7 +127,7 @@ return {
     m.content.sha256 = ("0"):rep(64)
     T.raises(function() schema.encode("event", m) end, "content.sha256: does not match")
     local d = { _ = "summary-completed", job = "j", attempt = 1, bytes = 4,
-                sha256 = require("unii.host.sha256").hex("abc"), text = "abc" }
+                sha256 = require("host.sha256").hex("abc"), text = "abc" }
     T.raises(function() schema.encode("event", d) end, "does not equal")
   end },
 
@@ -147,7 +157,7 @@ return {
       "%(/ ", "%(shen%.", "%(intern ",
     }
     for _, name in ipairs(manifest.core_files) do
-      local src = read(unii .. "/core/" .. name)
+      local src = read(root .. "/core/" .. name)
       local code = src:gsub("\\%*.-%*\\", ""):gsub("\\\\[^\n]*", "")
       for _, pat in ipairs(forbidden) do
         T.ok(not code:find(pat), name .. " uses forbidden form " .. pat)
@@ -157,7 +167,7 @@ return {
 
   { "host never evaluates data as Shen source", function()
     local allowed = { ['"(tc +)"'] = true, ['"(tc -)"'] = true }
-    local p = io.popen(("grep -rn 'eval' %q/host"):format(unii))
+    local p = io.popen(("grep -rn 'eval' %q/host"):format(root))
     for line in p:lines() do
       for arg in line:gmatch("eval(%b())") do
         T.ok(allowed[arg:sub(2, -2)], "host eval with non-constant argument: " .. line)
@@ -177,7 +187,7 @@ return {
   end },
 
   { "upstream probe: datatype rules with >= 6 premises (workaround in types.shen)", function()
-    local dir = unii .. "/test/fixtures/upstream"
+    local dir = root .. "/test/fixtures/upstream"
     local function probe(file, expr)
       return (T.sh(("luajit %q %q %q"):format(dir .. "/probe.lua", dir .. "/" .. file, expr)))
     end

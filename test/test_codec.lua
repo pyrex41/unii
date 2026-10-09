@@ -1,14 +1,14 @@
 -- Codec round trips: every tagged value kind through Shen and through the
 -- canonical storage encoding; distinctions that automatic table conversion
 -- would lose; UTF-8 validation; schema records with optional fields.
-local T = require("unii.test.lib")
-local codec = require("unii.host.codec")
-local schema = require("unii.host.schema")
-local sha256 = require("unii.host.sha256")
+local T = require("test.lib")
+local codec = require("host.codec")
+local schema = require("host.schema")
+local sha256 = require("host.sha256")
 
 local function shen()
   T.core()
-  return require("unii.host.core").shen()
+  return require("host.core").shen()
 end
 
 local function samples()

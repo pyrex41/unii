@@ -1,9 +1,9 @@
 -- Tree addressing and exact arithmetic, checked against independent Lua
 -- computations (int64 cross-multiplication for due scores).
-local T = require("unii.test.lib")
+local T = require("test.lib")
 local ffi = require("ffi")
 
-local function S() T.core(); return require("unii.host.core").shen() end
+local function S() T.core(); return require("host.core").shen() end
 
 local function key(s, l, i) return s.list({ s.sym("key"), l, i }) end
 local function unkey(s, k) local t = s.totable(k); return t[2], t[3] end

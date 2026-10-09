@@ -1,11 +1,12 @@
-local script = (arg and arg[0]) or "unii/eval/oracle/generate_fixtures.lua"
-local root = script:match("^(.*)unii/eval/oracle/") or "./"
+local script = (arg and arg[0]) or "eval/oracle/generate_fixtures.lua"
+local root = script:match("^(.*)eval/oracle/[^/]*$")
+if not root or root == "" then root = "./" end
 package.path = root .. "?.lua;" .. package.path
 
-local oracle = require("unii.eval.oracle.oracle")
-local rollback = require("unii.eval.oracle.rollback")
+local oracle = require("eval.oracle.oracle")
+local rollback = require("eval.oracle.rollback")
 
-local FIXTURE_DIR = root .. "unii/eval/fixtures/"
+local FIXTURE_DIR = root .. "eval/fixtures/"
 
 local function addresses(values)
   local out = {}

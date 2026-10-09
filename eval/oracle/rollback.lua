@@ -11,7 +11,7 @@
 -- Field names and branch structure intentionally stay close to the source so
 -- this can serve as a reference independent of the due-score implementation.
 
-local oracle = require("unii.eval.oracle.oracle")
+local oracle = require("eval.oracle.oracle")
 
 local M = {}
 

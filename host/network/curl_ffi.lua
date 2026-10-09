@@ -69,7 +69,7 @@ ffi.cdef[[
 
 local ok, lib = pcall(ffi.load, "libcurl.so.4")
 if not ok then
-  error("unii.host.network: failed to load libcurl.so.4 (OpenSSL build): " .. tostring(lib))
+  error("host.network: failed to load libcurl.so.4 (OpenSSL build): " .. tostring(lib))
 end
 
 -- CINIT(name, TYPE, n) => TYPE_BASE + n. LONG=0, OBJECT/STRING=10000,

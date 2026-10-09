@@ -1,18 +1,14 @@
 -- Real-provider smoke test. Skips with status "skip" when no API key is set.
 -- A skip is a successful run of this spike: it is not a provider integration.
 --
---   luajit unii/test/network/smoke.lua
+--   luajit test/network/smoke.lua
 
 local dir = (arg and arg[0] or ""):match("^(.*)/[^/]+$") or "."
-local root = dir:gsub("/unii/test/network$", "")
-if root == dir then
-  root = dir:gsub("unii/test/network$", "")
-end
-if root == "" then root = "." end
+local root = dir:match("^(.*)/test/network$") or "."
 package.path = root .. "/?.lua;" .. root .. "/?/init.lua;" .. package.path
 
-local network = require("unii.host.network")
-local json = require("unii.host.network.json")
+local network = require("host.network")
+local json = require("host.network.json")
 
 local function run()
   local key = os.getenv("OPENAI_API_KEY")
@@ -90,7 +86,7 @@ local function run()
 end
 
 local invoked_as = ...
-if invoked_as ~= "unii.test.network.smoke" then
+if invoked_as ~= "test.network.smoke" then
   local status, detail = run()
   if status == "skip" then
     print("SKIP smoke: " .. tostring(detail))

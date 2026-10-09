@@ -1,4 +1,4 @@
--- unii/host/cli.lua -- milestone command line (Phase 1). Summaries come
+-- host/cli.lua -- milestone command line (Phase 1). Summaries come
 -- from the MOCK summarizer unless --network real is given, which uses the
 -- libcurl adapter and an OpenAI-compatible endpoint (--url, --model; the key
 -- comes from UNII_API_KEY or OPENAI_API_KEY and is never journaled).
@@ -57,8 +57,8 @@ end
 
 local function open_chat(opts, extra)
   if not opts.dir then usage("--dir is required") end
-  local sup = require("unii.host.supervisor")
-  local mock = require("unii.host.mock.summarizer")
+  local sup = require("host.supervisor")
+  local mock = require("host.mock.summarizer")
   extra = extra or {}
   local events = {}
   local s = sup.open(opts.dir, {
@@ -71,8 +71,8 @@ local function open_chat(opts, extra)
   elseif net == "real" then
     if not (opts.url and opts.model) then s:close(); usage("--network real needs --url and --model") end
     local key = os.getenv("UNII_API_KEY") or os.getenv("OPENAI_API_KEY")
-    local network = require("unii.host.network")
-    s.provider = require("unii.host.providers.chat_completions").new {
+    local network = require("host.network")
+    s.provider = require("host.providers.chat_completions").new {
       client = network.client {}, url = opts.url, model = opts.model, api_key = key,
       cap = s.config.leaf_cap,
     }
@@ -107,7 +107,7 @@ function commands.build()
 end
 
 function commands.init(opts)
-  local schema = require("unii.host.schema")
+  local schema = require("host.schema")
   local cfg = schema.config {
     low = num(opts, "low", "64000"), high = num(opts, "high", "128000"),
     leaf_cap = num(opts, "cap", "512"), lead_window = num(opts, "lead", "8"),
@@ -121,8 +121,8 @@ function commands.init(opts)
 end
 
 function commands.append(opts)
-  local synthetic = require("unii.host.synthetic")
-  local sha256 = require("unii.host.sha256")
+  local synthetic = require("host.synthetic")
+  local sha256 = require("host.sha256")
   local s, events = open_chat(opts)
   local count = tonumber(num(opts, "count", "10"))
   local seed = tonumber(num(opts, "seed", "1"))
@@ -208,9 +208,9 @@ end
 
 function commands.replay(opts)
   if not opts.dir then usage("--dir is required") end
-  local codec = require("unii.host.codec")
-  local schema = require("unii.host.schema")
-  local storage = require("unii.host.storage")
+  local codec = require("host.codec")
+  local schema = require("host.schema")
+  local storage = require("host.storage")
   local store = storage.open(opts.dir)
   for _, r in ipairs(store:records()) do
     local t = codec.decode(r.payload)
@@ -243,7 +243,7 @@ end
 function commands.milestone(opts)
   if not opts.dir then usage("--dir is required") end
   local count = num(opts, "count", "48")
-  local self = arg and arg[0] or "unii/bin/unii"
+  local self = arg and arg[0] or "bin/unii"
   local function run(args)
     local cmd = ("luajit %q %s 2>&1"):format(self, args)
     local p = io.popen(cmd)

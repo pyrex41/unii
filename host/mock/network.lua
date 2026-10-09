@@ -1,5 +1,5 @@
--- unii/host/mock/network.lua -- MOCK transport with the same Lua interface
--- as the real libcurl adapter (unii/host/network/, docs/contracts/network.md).
+-- host/mock/network.lua -- MOCK transport with the same Lua interface
+-- as the real libcurl adapter (host/network/, docs/contracts/network.md).
 -- No sockets, no TLS, no wall clock: a scripted in-process "server" answers
 -- each request, and every client:tick() advances a simulated clock by
 -- opts.tick_ms and delivers at most one body chunk per live request.
@@ -13,8 +13,8 @@
 --   { stall = true }          -- request sent, nothing comes back until the
 --                             -- timeout: outcome "uncertain", reason "timeout"
 -- Outcomes, reasons and the `sent` flag follow the real adapter's rules.
-local sse = require("unii.host.network.sse")
-local json = require("unii.host.network.json")
+local sse = require("host.network.sse")
+local json = require("host.network.json")
 
 local M = {}
 M.IS_MOCK = true

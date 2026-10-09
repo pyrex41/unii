@@ -1,4 +1,4 @@
--- unii/host/codec.lua -- explicit Shen/Lua and storage marshalling.
+-- host/codec.lua -- explicit Shen/Lua and storage marshalling.
 --
 -- Three layers, none of which relies on shen-lua's automatic table
 -- conversion:
@@ -29,6 +29,7 @@
 --      list l<items>e          vec  v<items>e
 --      map  m(<text key><value>)*e   keys strictly ascending bytewise;
 --                                    absent values are omitted
+require("host.shen_lua").install()
 local checked = require("checked_integer")
 
 local M = {}

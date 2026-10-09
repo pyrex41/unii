@@ -1,4 +1,4 @@
--- unii/host/posix.lua -- the only module that touches POSIX file APIs.
+-- host/posix.lua -- the only module that touches POSIX file APIs.
 -- All durability boundaries pass through the fault hook below. Tests use it
 -- to emulate process death, short/torn writes and ENOSPC without weakening
 -- production error handling.

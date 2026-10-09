@@ -1,11 +1,11 @@
 -- Unii network adapter. See README.md for the Lua interface the supervisor
 -- should call, and for how outcomes map onto effect commands.
 
-local client = require("unii.host.network.client")
-local curl = require("unii.host.network.curl_ffi")
-local sse = require("unii.host.network.sse")
-local json = require("unii.host.network.json")
-local redact = require("unii.host.network.redact")
+local client = require("host.network.client")
+local curl = require("host.network.curl_ffi")
+local sse = require("host.network.sse")
+local json = require("host.network.json")
+local redact = require("host.network.redact")
 
 return {
   IS_MOCK = false,

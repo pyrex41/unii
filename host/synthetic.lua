@@ -1,4 +1,4 @@
--- unii/host/synthetic.lua -- deterministic synthetic conversation messages
+-- host/synthetic.lua -- deterministic synthetic conversation messages
 -- for the milestone CLI and tests. Host-side only: the seed and the date
 -- base are inputs, so the same arguments always give the same messages.
 local M = {}

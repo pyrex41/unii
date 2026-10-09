@@ -18,7 +18,25 @@
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "shen-lua": "shen-lua"
+      }
+    },
+    "shen-lua": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790635526,
+        "narHash": "sha256-5V96MYsxxOXg4RDJ/OuTgWbVjtdpIy+RyAc6iVRt6VQ=",
+        "owner": "pyrex41",
+        "repo": "shen-lua",
+        "rev": "fc9757731580f77aad6b3b4cea53773261b36d44",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pyrex41",
+        "repo": "shen-lua",
+        "rev": "fc9757731580f77aad6b3b4cea53773261b36d44",
+        "type": "github"
       }
     }
   },

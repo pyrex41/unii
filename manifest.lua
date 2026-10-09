@@ -1,5 +1,5 @@
--- unii/manifest.lua -- build manifest: pinned revisions, toolchain, license,
--- bundle composition and format versions. Read by unii/build.lua, by the
+-- manifest.lua -- build manifest: pinned revisions, toolchain, license,
+-- bundle composition and format versions. Read by build.lua, by the
 -- host at boot (bundle/format versions) and by the tests. docs/MANIFEST.md
 -- is the prose companion; keep the two in step.
 return {
@@ -18,7 +18,8 @@ return {
 
   shen_lua = {
     repo = "https://github.com/pyrex41/shen-lua",
-    -- Base commit of this branch; the runtime outside unii/ must equal it.
+    -- The runtime unii boots: submodule vendor/shen-lua and the flake input
+    -- shen-lua are both pinned to this commit (host/shen_lua.lua checks it).
     commit = "fc9757731580f77aad6b3b4cea53773261b36d44",
     commit_date = "2026-09-28T17:45:26-05:00",
     release = "0.11.1",
@@ -40,14 +41,15 @@ return {
   },
 
   toolchain = {
-    luajit = "LuaJIT 2.1; full suite verified on 2.1.1774638290 (nix develop ./unii, "
+    luajit = "LuaJIT 2.1; full suite verified on 2.1.1774638290 (nix develop, "
           .. "/nix/store/damwm6hccy1ryvjsjizfjrxf8rmcraia-luajit-2.1.1774638290) and on "
           .. "2.1.1703358377 (Ubuntu 24.04 package 2.1.0+git20231223.c525bcb+dfsg-1ubuntu0.1)",
-    dev_shell = "nix develop ./unii (unii/flake.nix + unii/flake.lock: luajit, git, curl, gnumake, coreutils)",
-    nixpkgs = "a5cc6f2c37bf518436dc8d1c288ccd0c43c2f4c4", -- same pin as the repo root flake.lock
+    dev_shell = "nix develop (flake.nix + flake.lock: luajit, git, curl, gnumake, coreutils, python3, "
+             .. "openssl; UNII_SHEN_LUA = the shen-lua flake input)",
+    nixpkgs = "a5cc6f2c37bf518436dc8d1c288ccd0c43c2f4c4", -- same pin as shen-lua's flake.lock at the pinned commit
     platform = "Linux x86_64 verified; Linux aarch64 and macOS supported by host/posix.lua flag tables but unverified",
     external_libraries = "none (SHA-256, codec and POSIX bindings are in-tree; LuaJIT FFI only)",
   },
 
-  license = "BSD-3-Clause, same terms as the shen-lua port (LICENSE at the repo root)",
+  license = "BSD-3-Clause, same terms as the shen-lua port (LICENSE)",
 }

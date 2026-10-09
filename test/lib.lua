@@ -1,4 +1,4 @@
--- unii/test/lib.lua -- minimal assertion helpers shared by the test files.
+-- test/lib.lua -- minimal assertion helpers shared by the test files.
 local M = {}
 
 function M.eq(a, b, msg)
@@ -34,7 +34,7 @@ end
 function M.rm(path) os.execute(("rm -rf %q"):format(path)) end
 
 function M.root()
-  return debug.getinfo(1, "S").source:sub(2):match("^(.*)/unii/test/lib%.lua$")
+  return debug.getinfo(1, "S").source:sub(2):match("^(.*)/test/lib%.lua$") or "."
 end
 
 function M.sh(cmd)
@@ -49,13 +49,13 @@ end
 -- Shared booted core (one Shen environment per test process).
 local core_instance
 function M.core()
-  if not core_instance then core_instance = require("unii.host.core").boot() end
+  if not core_instance then core_instance = require("host.core").boot() end
   return core_instance
 end
 
 -- Event builders.
-local sha256 = require("unii.host.sha256")
-local schema = require("unii.host.schema")
+local sha256 = require("host.sha256")
+local schema = require("host.schema")
 function M.msg(id, kind, text, date)
   return { _ = "message-appended", id = tostring(id), kind = kind or "user",
            date = date or "2026-10-09T00:00:00Z",

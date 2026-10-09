@@ -1,5 +1,5 @@
-\\ Upstream regression probe (see unii/docs/HANDOFF.md, "Upstream issue").
-\\ Loaded under (tc +) with SHEN_FASL=off by unii/test/test_boundary.lua.
+\\ Upstream regression probe (see docs/HANDOFF.md, "Upstream issue").
+\\ Loaded under (tc +) with SHEN_FASL=off by test/test_boundary.lua.
 
 (datatype probe5-key
   L : number; I : number;

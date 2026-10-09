@@ -1,6 +1,6 @@
 -- Rebuildable projections. These files are never authoritative: startup
 -- validates the journal and blobs first, then replaces all indexes.
-local posix = require("unii.host.posix")
+local posix = require("host.posix")
 
 local M = {}
 
