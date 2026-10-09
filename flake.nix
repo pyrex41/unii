@@ -23,6 +23,10 @@
           ];
           UNII_SHEN_LUA = "${shen-lua}";
           UNII_SHEN_LUA_REV = shen-lua.rev;
+          # host/network/curl_ffi.lua dlopens libcurl.so.4, which Nix's
+          # LuaJIT cannot find without this.
+          LD_LIBRARY_PATH = pkgs.lib.optionalString pkgs.stdenv.isLinux
+            (pkgs.lib.makeLibraryPath [ pkgs.curl ]);
           shellHook = ''
             echo "unii dev shell: $(luajit -v)"
             echo "shen-lua runtime: $UNII_SHEN_LUA ($UNII_SHEN_LUA_REV)"
